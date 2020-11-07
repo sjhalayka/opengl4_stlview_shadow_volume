@@ -335,12 +335,6 @@ void mesh::scale_mesh(float max_extent)
 
 void mesh::draw(GLint render_shader_program)
 {
-	get_vertices_and_normals_from_triangles();
-
-	init_opengl_data();
-
-
-
 	glUseProgram(render_shader_program);
 
 	GLuint components_per_vertex = 6;

@@ -136,8 +136,8 @@ bool init_opengl(const int &width, const int &height)
 	//For SSAO:
 
 
-		ssao_level = 1.0f;
-	ssao_radius = 0.05f;
+	ssao_level = 1.0f;
+	ssao_radius = 0.25f;
 	show_shading = true;
 	show_ao = true;
 	weight_by_angle = true;
@@ -240,10 +240,6 @@ void draw_axis(void)
 	glLineWidth(2.0);
 
 	glUseProgram(flat.get_program());
-
-	main_camera.calculate_camera_matrices(win_x, win_y);
-	glUniformMatrix4fv(uniforms.flat.proj_matrix, 1, GL_FALSE, &main_camera.projection_mat[0][0]);
-	glUniformMatrix4fv(uniforms.flat.view_matrix, 1, GL_FALSE, &main_camera.view_mat[0][0]);
 
 	const GLuint components_per_vertex = 3;
 	const GLuint components_per_position = 3;
@@ -398,160 +394,6 @@ void draw_meshes(void)
 
 void display_func(void)
 {
-	/*
-	Frustum lightFrustum;
-
-	GLuint shadowFBO, pass1Index, pass2Index;
-
-	int shadowMapWidth = 2048;
-	int shadowMapHeight = 2048;
-
-	mat4 lightPV, shadowBias;
-
-	GLfloat border[] = { 1.0f, 0.0f,0.0f,0.0f };
-	// The depth buffer texture
-	GLuint depthTex;
-	glGenTextures(1, &depthTex);
-	glBindTexture(GL_TEXTURE_2D, depthTex);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, shadowMapWidth, shadowMapHeight);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-
-	// Assign the depth buffer usetexture to texture channel 0
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthTex);
-
-	// Create and set up the FBO
-	glGenFramebuffers(1, &shadowFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-		GL_TEXTURE_2D, depthTex, 0);
-
-	GLenum drawBuffers[] = { GL_NONE };
-	glDrawBuffers(1, drawBuffers);
-
-	GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (result == GL_FRAMEBUFFER_COMPLETE) {
-		printf("Framebuffer is complete.\n");
-	}
-	else {
-		printf("Framebuffer is not complete.\n");
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-
-
-	GLuint programHandle = shadow_map.get_program();
-	pass1Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "recordDepth");
-	pass2Index = glGetSubroutineIndex(programHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
-
-	shadowBias = mat4(vec4(0.5f, 0.0f, 0.0f, 0.0f),
-		vec4(0.0f, 0.5f, 0.0f, 0.0f),
-		vec4(0.0f, 0.0f, 0.5f, 0.0f),
-		vec4(0.5f, 0.5f, 0.5f, 1.0f)
-	);
-
-	vec3 lightPos = vec3(100.0f, 100.0f, 100.0f);  // World coords
-
-	lightFrustum.orient(lightPos, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
-	lightFrustum.setPerspective(45.0f, 1.0f, 0.01f, 1000.0f);
-	lightPV = shadowBias * lightFrustum.getProjectionMatrix() * lightFrustum.getViewMatrix();
-
-
-	main_camera.calculate_camera_matrices(win_x, win_y);
-	mat4 model(1.0f);
-	mat4 mv = model * main_camera.view_mat;
-	mat3 normal = mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2]));
-	mat4 mvp = main_camera.projection_mat * mv;
-	mat4 shadow = lightPV * model;
-	mat4 view = main_camera.view_mat;
-
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ModelViewMatrix"), 1, GL_FALSE, &mv[0][0]);
-	glUniformMatrix3fv(glGetUniformLocation(shadow_map.get_program(), "NormalMatrix"), 1, GL_FALSE, &normal[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ShadowMatrix"), 1, GL_FALSE, &shadow[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ViewMatrix"), 1, GL_FALSE, &view[0][0]);
-
-	glUniform1i(glGetUniformLocation(shadow_map.get_program(), "shadow_map"), 0);
-
-
-
-
-
-
-	shadow_map.use_program();
-
-
-	mv = model * lightFrustum.getViewMatrix();
-	normal = mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2]));
-	mvp = lightFrustum.getProjectionMatrix() * mv;
-	lightPV = shadowBias * lightFrustum.getProjectionMatrix() * lightFrustum.getViewMatrix();
-	shadow = lightPV * model;
-	view = lightFrustum.getViewMatrix();
-
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ModelViewMatrix"), 1, GL_FALSE, &mv[0][0]);
-	glUniformMatrix3fv(glGetUniformLocation(shadow_map.get_program(), "NormalMatrix"), 1, GL_FALSE, &normal[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ShadowMatrix"), 1, GL_FALSE, &shadow[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ViewMatrix"), 1, GL_FALSE, &view[0][0]);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, shadowMapWidth, shadowMapHeight);
-	glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass1Index);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	//	glPolygonOffset(2.5f, 10.0f);
-
-	draw_meshes(shadow_map.get_program());
-	glFlush();
-
-
-
-	// reset camera matrices
-	main_camera.calculate_camera_matrices(win_x, win_y);
-	mv = model * main_camera.view_mat;
-	normal = mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2]));
-	mvp = main_camera.projection_mat * mv;
-	lightPV = shadowBias * lightFrustum.getProjectionMatrix() * lightFrustum.getViewMatrix();
-	shadow = lightPV * model;
-	view = main_camera.view_mat;
-
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ModelViewMatrix"), 1, GL_FALSE, &mv[0][0]);
-	glUniformMatrix3fv(glGetUniformLocation(shadow_map.get_program(), "NormalMatrix"), 1, GL_FALSE, &normal[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "MVP"), 1, GL_FALSE, &mvp[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ShadowMatrix"), 1, GL_FALSE, &shadow[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shadow_map.get_program(), "ViewMatrix"), 1, GL_FALSE, &view[0][0]);
-
-	glCullFace(GL_BACK);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, win_x, win_y);
-	glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &pass2Index);
-
-	draw_meshes(shadow_map.get_program());
-
-
-
-
-	glFlush();
-	glutSwapBuffers();
-
-
-	glDeleteTextures(1, &depthTex);
-	glDeleteFramebuffers(1, &shadowFBO);
-
-	*/
 
 
 
