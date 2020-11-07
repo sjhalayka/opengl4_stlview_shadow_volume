@@ -37,7 +37,7 @@ bool vertex_geometry_fragment_shader::init(const char *vertex_shader_filename, c
 
 		GLchar* log = new GLchar[len+1];
 		glGetShaderInfoLog(vertex_shader, len, &len, log);
-		cerr << "Shader compilation failed: " << log << endl;
+		cerr << "Vertex shader compilation failed: " << log << endl;
 		delete [] log;
 
 		glDeleteProgram(program);
@@ -76,7 +76,7 @@ bool vertex_geometry_fragment_shader::init(const char *vertex_shader_filename, c
 
 		GLchar* log = new GLchar[len + 1];
 		glGetShaderInfoLog(geometry_shader, len, &len, log);
-		cerr << "Shader compilation failed: " << log << endl;
+		cerr << "Geometry shader compilation failed: " << log << endl;
 		delete[] log;
 
 		glDeleteProgram(program);
@@ -117,7 +117,7 @@ bool vertex_geometry_fragment_shader::init(const char *vertex_shader_filename, c
 
 		GLchar* log = new GLchar[len+1];
 		glGetShaderInfoLog(fragment_shader, len, &len, log);
-		cerr << "Shader compilation failed: " << log << endl;
+		cerr << "Fragment shader compilation failed: " << log << endl;
 		delete [] log;
 
 		glDeleteProgram(program);

@@ -10,7 +10,7 @@
 uv_camera::uv_camera(void)
 {
 	u = v = 0;
-	w = 5;
+	w = 10;
 	fov = 45.0f;
 	near_plane = 0.0001f;
 	far_plane = 1000.0f;
@@ -51,14 +51,15 @@ void uv_camera::transform(void)
 	rotate();
 	translate();
 
-	model_mat = glm::mat4(1.0f);
-
-	projection_mat = perspective(
-		glm::radians(fov),
-		float(win_x) / float(win_y),
-		near_plane, 
-		far_plane
-	);
+	if (win_y > 0)
+	{
+		projection_mat = perspective(
+			glm::radians(fov),
+			float(win_x) / float(win_y),
+			near_plane,
+			far_plane
+		);
+	}
 
 	view_mat = glm::lookAt(
 		eye,

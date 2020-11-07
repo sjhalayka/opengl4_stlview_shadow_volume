@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-
+#include "frustum.h"
 #include "uv_camera.h"
 #include "primitives.h"
 #include "mesh.h"
@@ -41,8 +41,14 @@ void motion_func(int x, int y);
 void passive_motion_func(int x, int y);
 
 
-void draw_mesh(void);
+
+void draw_meshes(void);
 void draw_dot(void);
+void draw_axis(void);
+
+
+mesh sphere_mesh;
+mesh game_piece_mesh;
 
 
 vector<triangle> triangles;
@@ -53,6 +59,9 @@ vector<vec3> vertex_normals;
 vertex_geometry_fragment_shader render;
 vertex_fragment_shader flat;
 vertex_fragment_shader ssao;
+
+
+
 
 uv_camera main_camera;
 
@@ -84,9 +93,9 @@ struct
 {
 	struct
 	{
-		GLint           mv_matrix;
+		GLint           view_matrix;
 		GLint           proj_matrix;
-		GLint           shading_level;
+		GLint			use_specular;
 	} render;
 
 
@@ -102,7 +111,7 @@ struct
 
 	struct
 	{
-		GLint           mv_matrix;
+		GLint           view_matrix;
 		GLint           proj_matrix;
 		GLint			flat_colour;
 	} flat;

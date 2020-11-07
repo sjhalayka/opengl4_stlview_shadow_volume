@@ -45,7 +45,6 @@ public:
 	float near_plane;
 	float far_plane;
 
-	mat4 model_mat;
 	mat4 view_mat;
 	mat4 projection_mat;
 

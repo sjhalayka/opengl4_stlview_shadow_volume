@@ -15,6 +15,8 @@ in vec3 vertex_colour;
 vec3 specular_albedo = vec3(1.0, 1.0, 1.0);
 float specular_power = 8.0;
 
+uniform int use_specular = 0;
+
 void main(void)
 {
     // Normalize the incoming N, L and V vectors
@@ -29,7 +31,10 @@ void main(void)
     vec3 diffuse = max(dot(N_, L_), 0.0) * vertex_colour;
     diffuse *= diffuse;
 
-    vec3 specular = pow(max(dot(R_, V_), 0.0), specular_power) * specular_albedo;
+    vec3 specular = vec3(0, 0, 0);
+    
+    if(use_specular)
+        specular = pow(max(dot(R_, V_), 0.0), specular_power) * specular_albedo;
 
     vec3 ambient = vec3(0, 0, 0);
 

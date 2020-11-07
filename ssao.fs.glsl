@@ -15,8 +15,6 @@ uniform bool weight_by_angle = true;
 uniform uint point_count = 8;
 uniform bool randomize_points = true;
 
-uniform vec4 background_colour;
-
 // Uniform block containing up to 256 random directions (x,y,z,0)
 // and 256 more completely random vectors
 layout (binding = 0, std140) uniform SAMPLE_POINTS
@@ -34,7 +32,7 @@ void main(void)
     // Extract normal and depth
     vec3 N = ND.xyz;
     float my_depth = ND.w;
-    
+   
     if(my_depth <= 1.0)
     {
         colour = textureLod(sColor, P, 0);

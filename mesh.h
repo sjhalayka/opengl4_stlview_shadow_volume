@@ -1,12 +1,20 @@
 #pragma once
 
 #include "primitives.h"
+#include "uv_camera.h"
 
-
+#include <glm/glm.hpp>
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
 #include <glm/mat4x4.hpp> // glm::mat4
+
+#include <glm/gtx/euler_angles.hpp>
+
 using namespace glm;
+
+#include <cstdlib>
+#include <GL/glew.h>
+#include <GL/glut.h>
 
 #include <iostream>
 using std::cout;
@@ -31,10 +39,26 @@ using std::numeric_limits;
 
 #include <cstring> // for memcpy()
 
+class mesh
+{
+public:
+	vector<triangle> triangles;
+	vector<vec3> face_normals;
+	vector<vec3> vertices;
+	vector<vec3> vertex_normals;
+	vector<float> opengl_vertex_data;
+
+	bool read_triangles_from_binary_stereo_lithography_file(const char* const file_name);
+	void scale_mesh(float max_extent);
+	void rotate_and_translate_mesh(float yaw, float pitch, vec3 translate_vec);
+
+	void draw(GLint render_shader_program);
+
+protected:
+	void get_vertices_and_normals_from_triangles();
+	void init_opengl_data(void);
+};
 
 
-void get_vertices_and_normals_from_triangles(vector<triangle> &t, vector<vec3> &fn, vector<vec3> &v, vector<vec3> &vn);
-bool read_triangles_from_binary_stereo_lithography_file(vector<triangle> &triangles, const char *const file_name);
-void scale_mesh(vector<triangle> &triangles, float max_extent);
 
 
